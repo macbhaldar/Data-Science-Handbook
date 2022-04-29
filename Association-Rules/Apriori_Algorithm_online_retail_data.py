@@ -28,20 +28,20 @@ data['InvoiceNo'] = data['InvoiceNo'].astype('str')
 data = data[~data['InvoiceNo'].str.contains('C')]
 
 # Splitting the data according to the region of transaction
-# Transactions done in France
-basket_France = (data[data['Country'] =="France"]
-		.groupby(['InvoiceNo', 'Description'])['Quantity']
-		.sum().unstack().reset_index().fillna(0)
-		.set_index('InvoiceNo'))
-
 # Transactions done in the United Kingdom
 basket_UK = (data[data['Country'] =="United Kingdom"]
 		.groupby(['InvoiceNo', 'Description'])['Quantity']
 		.sum().unstack().reset_index().fillna(0)
 		.set_index('InvoiceNo'))
 
-# Transactions done in Portugal
-basket_Por = (data[data['Country'] =="Portugal"]
+# Transactions done in France
+basket_France = (data[data['Country'] =="France"]
+		.groupby(['InvoiceNo', 'Description'])['Quantity']
+		.sum().unstack().reset_index().fillna(0)
+		.set_index('InvoiceNo'))
+
+# Transactions done in Germany
+basket_Germany = (data[data['Country'] =="Germany"]
 		.groupby(['InvoiceNo', 'Description'])['Quantity']
 		.sum().unstack().reset_index().fillna(0)
 		.set_index('InvoiceNo'))
@@ -61,29 +61,40 @@ def hot_encode(x):
 		return 1
 
 # Encoding the datasets
-basket_encoded = basket_France.applymap(hot_encode)
-basket_France = basket_encoded
-
 basket_encoded = basket_UK.applymap(hot_encode)
 basket_UK = basket_encoded
 
-basket_encoded = basket_Por.applymap(hot_encode)
-basket_Por = basket_encoded
+basket_encoded = basket_France.applymap(hot_encode)
+basket_France = basket_encoded
+
+basket_encoded = basket_Germany.applymap(hot_encode)
+basket_Germany = basket_encoded
 
 basket_encoded = basket_Sweden.applymap(hot_encode)
 basket_Sweden = basket_encoded
 
 # Building the models and analyzing the results
 
-# # Building the model for UK
+# Building the model for UK
 frq_items = apriori(basket_UK, min_support = 0.01, use_colnames = True)
 rules = association_rules(frq_items, metric ="lift", min_threshold = 1)
 rules = rules.sort_values(['confidence', 'lift'], ascending =[False, False])
 print(rules.head())
 
-
 # Building the model for France
 frq_items = apriori(basket_France, min_support = 0.05, use_colnames = True)
+rules = association_rules(frq_items, metric ="lift", min_threshold = 1)
+rules = rules.sort_values(['confidence', 'lift'], ascending =[False, False])
+print(rules.head())
+
+# Building the model for Germany
+frq_items = apriori(basket_Germany, min_support = 0.05, use_colnames = True)
+rules = association_rules(frq_items, metric ="lift", min_threshold = 1)
+rules = rules.sort_values(['confidence', 'lift'], ascending =[False, False])
+print(rules.head())
+
+# Building the model for Sweden
+frq_items = apriori(basket_Sweden, min_support = 0.05, use_colnames = True)
 rules = association_rules(frq_items, metric ="lift", min_threshold = 1)
 rules = rules.sort_values(['confidence', 'lift'], ascending =[False, False])
 print(rules.head())
